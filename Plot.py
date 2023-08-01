@@ -13,15 +13,95 @@ class Plot:
         self.prep_data()
 
     def prep_data(self):
+        '''This method preps the data for generating the plots.'''
         self.anon_df = self.data[data.age.isna(
         ) | data.gender.isna() | data.income.isna()]
         self.doxed_df = self.data[data.age.notna(
         ) | data.gender.notna() | data.income.notna()]
 
     def generate_plots_for_blog_post(self):
-        self.anon_doxed_comp()
+        '''This method calls all methods that generate the desired plots, so we just have to call this method to generate all of them at once.'''
+        self.bar_anon_doxed_offer_comp()
+        self.bar_anon_doxed_transaction_comp()
 
-    def anon_doxed_comp(self):
+    def bar_anon_doxed_transaction_comp(self):
+        '''This method generates a bar chart that compares the spending behavior of anon and doxed customers.'''
+
+        anon_data = {
+            'Transactions': self.anon_df.transaction.sum(),
+            'Customer count': self.anon_df.shape[0],
+        }
+        doxed_data = {
+            'Transactions': self.doxed_df.transaction.sum(),
+            'Customer count': self.doxed_df.shape[0],
+        }
+
+        anon_df = pd.DataFrame.from_dict(anon_data, orient='index', columns=['anon_counts']).reset_index()
+        doxed_df = pd.DataFrame.from_dict(doxed_data, orient='index', columns=['doxed_counts']).reset_index()
+        anon_doxed_df = pd.merge(anon_df, doxed_df, on=['index'])
+        anon_doxed_df = anon_doxed_df.iloc[[1, 0]].reset_index(drop=True)
+
+        # Create the grouped bar chart with two y-axes
+        anon_doxed_comp = make_subplots(specs=[[{"secondary_y": True}]])
+
+        anon_doxed_comp.add_trace(
+            go.Bar(
+                x=anon_doxed_df['index'],
+                y=anon_doxed_df['anon_counts'],
+                width=0.3,
+                offset=-0.3,
+                name='Anon data',
+                text=anon_doxed_df['anon_counts'].tolist(),
+                marker=dict(color=px.colors.qualitative.Vivid[2]),
+            ),
+            secondary_y=False,
+        )
+
+        anon_doxed_comp.add_trace(
+            go.Bar(
+                x=anon_doxed_df['index'],
+                y=anon_doxed_df['doxed_counts'],
+                width=0.3,
+                offset=0,
+                name='Doxed data',
+                text=anon_doxed_df['doxed_counts'].tolist(),
+                marker=dict(color=px.colors.qualitative.Vivid[5]),
+            ),
+            secondary_y=True,
+        )
+
+        # anon_doxed_comp.update_traces(color=[px.colors.qualitative.Vivid[2], px.colors.qualitative.Vivid[5]])
+
+        anon_doxed_comp.update_layout(
+            title='Customer numbers vs transaction ratio - Anon / Doxed',
+            xaxis_title='Customer counts and transactions in total',
+            yaxis_title='Anon counts',
+            yaxis2_title='Doxed counts',
+            template='seaborn',
+            legend=dict(
+                x=0.75,
+                y=0.95,
+                bgcolor='rgba(0, 0, 0, 0)',
+                bordercolor='rgba(0, 0, 0, 0.5)',
+                borderwidth=1,
+                font=dict(
+                    size=10,
+                ),
+            ),
+        )
+
+        # Set y-axis ranges to align the bars properly
+        anon_doxed_comp.update_yaxes(
+            range=[0, max(anon_doxed_df['anon_counts']) + 10000], secondary_y=False)
+        anon_doxed_comp.update_yaxes(
+            range=[0, max(anon_doxed_df['doxed_counts']) + 10000], secondary_y=True)
+
+        anon_doxed_comp.write_image(
+            r'output/bar_anon_doxed_transaction_comp.png', scale=6, width=1080,  height=480)
+
+    def bar_anon_doxed_offer_comp(self):
+        '''This method generates a grouped bar plot, comparing the sums of all offer responses of anon and doxed customers'''
+        
         anon_sum = self.anon_df[['offer_received',
                                  'offer_viewed', 'offer_completed']].sum()
         doxed_sum = self.doxed_df[['offer_received',
@@ -33,44 +113,51 @@ class Plot:
             {'values': doxed_sum.index, 'doxed_counts': doxed_sum.values})
 
         anon_doxed_df = pd.merge(anon_sum_df, doxed_sum_df, on=['values'])
+        anon_doxed_df['values'] = ['Offer received',
+                                   'Offer viewed', 'Offer completed']
 
         # Create the grouped bar chart with two y-axes
         anon_doxed_comp = make_subplots(specs=[[{"secondary_y": True}]])
 
         anon_doxed_comp.add_trace(
             go.Bar(
-                x=anon_doxed_df['values'], 
-                y=anon_doxed_df['anon_counts'], 
-                name='anon_counts',
+                x=anon_doxed_df['values'],
+                y=anon_doxed_df['anon_counts'],
                 width=0.3,
                 offset=-0.3,
-                ),
+                name='Anon offer responses',
+                text=anon_doxed_df['anon_counts'].tolist(),
+            ),
             secondary_y=False,
         )
 
         anon_doxed_comp.add_trace(
             go.Bar(
-                x=anon_doxed_df['values'], 
-                y=anon_doxed_df['doxed_counts'], 
-                name='doxed_counts',
+                x=anon_doxed_df['values'],
+                y=anon_doxed_df['doxed_counts'],
                 width=0.3,
                 offset=0,
-                ),
+                name='Doxed offer responses',
+                text=anon_doxed_df['doxed_counts'].tolist(),
+            ),
             secondary_y=True,
         )
 
         anon_doxed_comp.update_layout(
             title='Offer responses: Anon customers vs. Doxed customers',
-            xaxis_title='Offer Responses',
-            yaxis_title='Anon Counts',
-            yaxis2_title='Doxed Counts',
+            xaxis_title='Offer responses',
+            yaxis_title='Anon counts',
+            yaxis2_title='Doxed counts',
             template='seaborn',
             legend=dict(
-                x=0.8,
+                x=0.75,
                 y=0.95,
                 bgcolor='rgba(0, 0, 0, 0)',
                 bordercolor='rgba(0, 0, 0, 0.5)',
                 borderwidth=1,
+                font=dict(
+                    size=10,
+                ),
             ),
         )
 
@@ -79,20 +166,9 @@ class Plot:
             range=[0, max(anon_doxed_df['anon_counts']) + 10000], secondary_y=False)
         anon_doxed_comp.update_yaxes(
             range=[0, max(anon_doxed_df['doxed_counts']) + 10000], secondary_y=True)
-                
-        label_mapping = {
-            'offer_received': 'Offer received',
-            'offer_viewed': 'Offer viewed',
-            'offer_completed': 'Offer completed'
-        }
 
-        anon_doxed_comp.update_xaxes(
-            ticktext=[label_mapping[label] for label in label_mapping.keys()],
-        )
-
-        anon_doxed_comp.show()
-
-        print('This is for a breakpoint only.')
+        anon_doxed_comp.write_image(
+            r'output/bar_anon_doxed_offer_comp.png', scale=6, width=1080,  height=480)
 
 
 if __name__ == '__main__':
