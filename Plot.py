@@ -8,6 +8,7 @@ class Plot:
     '''This class has the sole purpose to generate nice plots for the blog post using Plotly.'''
 
     def __init__(self, data) -> None:
+        '''Initializes the object.'''
         self.data = data
 
         self.prep_data()
