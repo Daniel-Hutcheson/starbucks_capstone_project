@@ -194,6 +194,7 @@ class Plot:
                                 'Offer viewed': 'blue', 
                                 'Offer completed': 'darkblue'},
             nbins=80,
+            barmode='stack',
         )
 
         hist_bogo_age_dist.update_layout(
@@ -216,8 +217,6 @@ class Plot:
 
         hist_bogo_age_dist.write_image(
             r'output/hist_bogo_age_dist.png', scale=6, width=1080,  height=480)
-
-        print('Breakpoint point.')
 
     def hist_bogo_income_dist(self):
         '''This method generates a histogram showing all "bogo" offer responses as an income distribution.'''
@@ -279,7 +278,7 @@ class Plot:
         )
 
         hist_discount_age_dist.update_layout(
-            title='Age distribution - "Buy one, get one" offer',
+            title='Age distribution - Discount offer',
             xaxis_title='Age',
             yaxis_title='Counts',
             template='seaborn',
@@ -298,8 +297,6 @@ class Plot:
 
         hist_discount_age_dist.write_image(
             r'output/hist_discount_age_dist.png', scale=6, width=1080,  height=480)
-
-        print('Breakpoint point.')
 
     def hist_discount_income_dist(self):
         '''This method generates a histogram showing all "discount" offer responses as an income distribution.'''
@@ -321,7 +318,7 @@ class Plot:
         )
 
         hist_discount_income_dist.update_layout(
-            title='Income distribution - "Buy one, get one" offer',
+            title='Income distribution - Discount offer',
             xaxis_title='Income',
             yaxis_title='Counts',
             template='seaborn',
