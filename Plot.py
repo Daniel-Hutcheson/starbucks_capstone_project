@@ -24,6 +24,10 @@ class Plot:
         '''This method calls all methods that generate the desired plots, so we just have to call this method to generate all of them at once.'''
         self.bar_anon_doxed_offer_comp()
         self.bar_anon_doxed_transaction_comp()
+        self.hist_bogo_age_dist()
+        self.hist_bogo_income_dist()
+        self.hist_discount_age_dist()
+        self.hist_discount_income_dist()
 
     def bar_anon_doxed_transaction_comp(self):
         '''This method generates a bar chart that compares the spending behavior of anon and doxed customers.'''
@@ -37,8 +41,10 @@ class Plot:
             'Customer count': self.doxed_df.shape[0],
         }
 
-        anon_df = pd.DataFrame.from_dict(anon_data, orient='index', columns=['anon_counts']).reset_index()
-        doxed_df = pd.DataFrame.from_dict(doxed_data, orient='index', columns=['doxed_counts']).reset_index()
+        anon_df = pd.DataFrame.from_dict(anon_data, orient='index', columns=[
+                                         'anon_counts']).reset_index()
+        doxed_df = pd.DataFrame.from_dict(doxed_data, orient='index', columns=[
+                                          'doxed_counts']).reset_index()
         anon_doxed_df = pd.merge(anon_df, doxed_df, on=['index'])
         anon_doxed_df = anon_doxed_df.iloc[[1, 0]].reset_index(drop=True)
 
@@ -102,7 +108,7 @@ class Plot:
 
     def bar_anon_doxed_offer_comp(self):
         '''This method generates a grouped bar plot, comparing the sums of all offer responses of anon and doxed customers'''
-        
+
         anon_sum = self.anon_df[['offer_received',
                                  'offer_viewed', 'offer_completed']].sum()
         doxed_sum = self.doxed_df[['offer_received',
@@ -170,6 +176,170 @@ class Plot:
 
         anon_doxed_comp.write_image(
             r'output/bar_anon_doxed_offer_comp.png', scale=6, width=1080,  height=480)
+
+    def hist_bogo_age_dist(self):
+        '''This method generates a histogram showing all "bogo" offer responses as an age distribution.'''
+
+        bogo_data = self.doxed_df[self.doxed_df.offer_type == 'bogo']
+        bogo_data = bogo_data.rename(columns={
+            'offer_received': 'Offer received', 
+            'offer_viewed':'Offer viewed',
+            'offer_completed':'Offer completed'})
+
+        hist_bogo_age_dist = px.histogram(
+            data_frame=bogo_data,
+            x='age',
+            y=['Offer received', 'Offer viewed', 'Offer completed'],
+            color_discrete_map={'Offer received': 'lightblue',
+                                'Offer viewed': 'blue', 
+                                'Offer completed': 'darkblue'},
+            nbins=80,
+        )
+
+        hist_bogo_age_dist.update_layout(
+            title='Age distribution - "Buy one, get one" offer',
+            xaxis_title='Age',
+            yaxis_title='Counts',
+            template='seaborn',
+            legend=dict(
+                title='Offer type',
+                x=0.8,
+                y=0.95,
+                bgcolor='rgba(0, 0, 0, 0)',
+                bordercolor='rgba(0, 0, 0, 0.5)',
+                borderwidth=1,
+                font=dict(
+                    size=10,
+                ),
+            ),
+        )
+
+        hist_bogo_age_dist.write_image(
+            r'output/hist_bogo_age_dist.png', scale=6, width=1080,  height=480)
+
+        print('Breakpoint point.')
+
+    def hist_bogo_income_dist(self):
+        '''This method generates a histogram showing all "bogo" offer responses as an income distribution.'''
+        
+        bogo_data = self.doxed_df[self.doxed_df.offer_type == 'bogo']
+        bogo_data = bogo_data.rename(columns={
+            'offer_received': 'Offer received', 
+            'offer_viewed':'Offer viewed',
+            'offer_completed':'Offer completed'})
+
+        hist_bogo_income_dist = px.histogram(
+            data_frame=bogo_data,
+            x='income',
+            y=['Offer received', 'Offer viewed', 'Offer completed'],
+            color_discrete_map={'Offer received': 'rgb(255, 192, 192)',
+                                'Offer viewed': 'red', 
+                                'Offer completed': 'rgb(139, 0, 0)'},
+            nbins=80,
+        )
+
+        hist_bogo_income_dist.update_layout(
+            title='Income distribution - "Buy one, get one" offer',
+            xaxis_title='Income',
+            yaxis_title='Counts',
+            template='seaborn',
+            legend=dict(
+                title='Offer type',
+                x=0.8,
+                y=0.95,
+                bgcolor='rgba(0, 0, 0, 0)',
+                bordercolor='rgba(0, 0, 0, 0.5)',
+                borderwidth=1,
+                font=dict(
+                    size=10,
+                ),
+            ),
+        )
+
+        hist_bogo_income_dist.write_image(
+            r'output/hist_bogo_income_dist.png', scale=6, width=1080,  height=480)
+
+    def hist_discount_age_dist(self):
+        '''This method generates a histogram showing all "discount" offer responses as an age distribution.'''
+
+        discount_data = self.doxed_df[self.doxed_df.offer_type == 'discount']
+        discount_data = discount_data.rename(columns={
+            'offer_received': 'Offer received', 
+            'offer_viewed':'Offer viewed',
+            'offer_completed':'Offer completed'})
+
+        hist_discount_age_dist = px.histogram(
+            data_frame=discount_data,
+            x='age',
+            y=['Offer received', 'Offer viewed', 'Offer completed'],
+            color_discrete_map={'Offer received': 'lightblue',
+                                'Offer viewed': 'blue', 
+                                'Offer completed': 'darkblue'},
+            nbins=80,
+        )
+
+        hist_discount_age_dist.update_layout(
+            title='Age distribution - "Buy one, get one" offer',
+            xaxis_title='Age',
+            yaxis_title='Counts',
+            template='seaborn',
+            legend=dict(
+                title='Offer type',
+                x=0.8,
+                y=0.95,
+                bgcolor='rgba(0, 0, 0, 0)',
+                bordercolor='rgba(0, 0, 0, 0.5)',
+                borderwidth=1,
+                font=dict(
+                    size=10,
+                ),
+            ),
+        )
+
+        hist_discount_age_dist.write_image(
+            r'output/hist_discount_age_dist.png', scale=6, width=1080,  height=480)
+
+        print('Breakpoint point.')
+
+    def hist_discount_income_dist(self):
+        '''This method generates a histogram showing all "discount" offer responses as an income distribution.'''
+        
+        discount_data = self.doxed_df[self.doxed_df.offer_type == 'discount']
+        discount_data = discount_data.rename(columns={
+            'offer_received': 'Offer received', 
+            'offer_viewed':'Offer viewed',
+            'offer_completed':'Offer completed'})
+
+        hist_discount_income_dist = px.histogram(
+            data_frame=discount_data,
+            x='income',
+            y=['Offer received', 'Offer viewed', 'Offer completed'],
+            color_discrete_map={'Offer received': 'rgb(255, 192, 192)',
+                                'Offer viewed': 'red', 
+                                'Offer completed': 'rgb(139, 0, 0)'},
+            nbins=80,
+        )
+
+        hist_discount_income_dist.update_layout(
+            title='Income distribution - "Buy one, get one" offer',
+            xaxis_title='Income',
+            yaxis_title='Counts',
+            template='seaborn',
+            legend=dict(
+                title='Offer type',
+                x=0.8,
+                y=0.95,
+                bgcolor='rgba(0, 0, 0, 0)',
+                bordercolor='rgba(0, 0, 0, 0.5)',
+                borderwidth=1,
+                font=dict(
+                    size=10,
+                ),
+            ),
+        )
+
+        hist_discount_income_dist.write_image(
+            r'output/hist_discount_income_dist.png', scale=6, width=1080,  height=480)
 
 
 if __name__ == '__main__':
